@@ -16,7 +16,8 @@ type Todo = {
   updated_at: string
 }
 
-const ITEMS_PER_PAGE = 1000
+// Page size options for the dropdown
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 500, 1000, 5000, 10000, 50000, 100000];
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([])
@@ -25,6 +26,7 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newTodoTitle, setNewTodoTitle] = useState('')
+  const [itemsPerPage, setItemsPerPage] = useState(PAGE_SIZE_OPTIONS[2]) // Default to 50 items per page
 
   // Load toast configuration only once on component mount
   useEffect(() => {
@@ -34,6 +36,11 @@ export default function Home() {
       toast.remove(); // Clean up toasts when component unmounts
     }
   }, []);
+
+  // Reset to first page when items per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
 
   // Load todos from the combined view with pagination, sorted by latest updated_at on top (descending)
   useEffect(() => {
@@ -52,7 +59,7 @@ export default function Home() {
           .from('combined_todos')
           .select('*')
           .order('updated_at', { ascending: false })
-          .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1)
+          .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1)
 
         if (error) throw error
         setTodos(data as Todo[] || [])
@@ -64,7 +71,7 @@ export default function Home() {
       }
     }
     load()
-  }, [currentPage])
+  }, [currentPage, itemsPerPage])
 
   // Create new todo
   async function createTodo() {
@@ -132,7 +139,12 @@ export default function Home() {
   }
 
   const completedCount = todos.filter(todo => todo.completed).length
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
+  const totalPages = Math.ceil(totalCount / itemsPerPage)
+
+  // Handle dropdown change
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setItemsPerPage(Number(e.target.value));
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -183,14 +195,6 @@ export default function Home() {
                     <span className="font-medium">Remaining:</span>
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{totalCount - completedCount}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Total Pages:</span>
-                    <span className="px-2 py-1 bg-gray-100 rounded-full">{totalPages}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Total on current page:</span>
-                    <span className="px-2 py-1 bg-gray-100 rounded-full">{todos.length}</span>
-                  </div>
                 </div>
               </div>
 
@@ -226,10 +230,27 @@ export default function Home() {
                 </ul>
               </Transition>
 
-              {/* Pagination */}
-              <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">
+              {/* Pagination Controls */}
+              <div className="mt-8 flex flex-wrap items-center justify-between border-t border-gray-200 pt-4 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center">
+                    <label htmlFor="page-size" className="mr-2 text-sm text-gray-700">
+                      Items per page:
+                    </label>
+                    <select
+                      id="page-size"
+                      value={itemsPerPage}
+                      onChange={handlePageSizeChange}
+                      className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {PAGE_SIZE_OPTIONS.map(size => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <span className="text-sm text-gray-700 ml-4">
                     Page <span className="font-medium">{currentPage}</span> of{' '}
                     <span className="font-medium">{totalPages}</span>
                   </span>
