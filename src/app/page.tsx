@@ -6,6 +6,9 @@ import { Dialog, Transition } from '@headlessui/react'
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import toast, { Toaster } from 'react-hot-toast'
 
+// Configure toast defaults globally
+toast.remove(); // Clear any existing toasts
+
 type Todo = {
   id: number
   title: string
@@ -22,6 +25,15 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newTodoTitle, setNewTodoTitle] = useState('')
+
+  // Load toast configuration only once on component mount
+  useEffect(() => {
+    // Creating an instance of Toaster programmatically is not needed
+    // The component is already used in the JSX
+    return () => {
+      toast.remove(); // Clean up toasts when component unmounts
+    }
+  }, []);
 
   // Load todos from the combined view with pagination, sorted by latest updated_at on top (descending)
   useEffect(() => {
@@ -61,55 +73,62 @@ export default function Home() {
       return
     }
 
-    const createPromise = supabase
-      .from('todos')
-      .insert([
-        {
-          title: newTodoTitle.trim(),
-          completed: false,
-          updated_at: new Date().toISOString(),
-        },
-      ])
-      .select()
+    const createToastId = toast.loading('Creating task...')
+    
+    try {
+      const { data, error } = await supabase
+        .from('todos')
+        .insert([
+          {
+            title: newTodoTitle.trim(),
+            completed: false,
+            updated_at: new Date().toISOString(),
+          },
+        ])
+        .select()
 
-    toast.promise(createPromise, {
-      loading: 'Creating task...',
-      success: (response) => {
-        if (response.error) throw response.error
-        setTodos((prev) => [...prev, response.data[0]])
-        setNewTodoTitle('')
-        setIsModalOpen(false)
-        return 'Task created successfully!'
-      },
-      error: 'Failed to create task'
-    })
+      if (error) throw error
+      
+      setTodos((prev) => [...prev, data[0] as Todo])
+      setNewTodoTitle('')
+      setIsModalOpen(false)
+      
+      toast.success('Task created successfully!', { id: createToastId })
+    } catch (error) {
+      console.error('Create error:', error)
+      toast.error('Failed to create task', { id: createToastId })
+    }
   }
 
   // Toggle completed status for one todo
   async function toggleComplete(todo: Todo) {
-    const updatePromise = supabase
-      .from('todos')
-      .update({
-        completed: !todo.completed,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', todo.id)
+    const updateToastId = toast.loading('Updating task...')
+    
+    try {
+      const { error } = await supabase
+        .from('todos')
+        .update({
+          completed: !todo.completed,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', todo.id)
 
-    toast.promise(updatePromise, {
-      loading: 'Updating task...',
-      success: (response) => {
-        if (response.error) throw response.error
-        setTodos((prev) =>
-          prev.map((t) =>
-            t.id === todo.id
-              ? { ...t, completed: !t.completed, updated_at: new Date().toISOString() }
-              : t
-          )
+      if (error) throw error
+      
+      setTodos((prev) =>
+        prev.map((t) =>
+          t.id === todo.id
+            ? { ...t, completed: !t.completed, updated_at: new Date().toISOString() }
+            : t
         )
-        return todo.completed ? 'Task marked as incomplete' : 'Task completed!'
-      },
-      error: 'Failed to update task'
-    })
+      )
+      
+      const successMessage = todo.completed ? 'Task marked as incomplete' : 'Task completed!'
+      toast.success(successMessage, { id: updateToastId })
+    } catch (error) {
+      console.error('Update error:', error)
+      toast.error('Failed to update task', { id: updateToastId })
+    }
   }
 
   const completedCount = todos.filter(todo => todo.completed).length
@@ -126,38 +145,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#fff',
-            color: '#363636',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-            borderRadius: '0.5rem',
-            padding: '1rem',
-          },
-          success: {
-            iconTheme: {
-              primary: '#059669',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#DC2626',
-              secondary: '#fff',
-            },
-          },
-          loading: {
-            iconTheme: {
-              primary: '#3B82F6',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
-
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -196,6 +183,14 @@ export default function Home() {
                     <span className="font-medium">Remaining:</span>
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{totalCount - completedCount}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Total Pages:</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-full">{totalPages}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Total on current page:</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded-full">{todos.length}</span>
+                  </div>
                 </div>
               </div>
 
@@ -220,8 +215,8 @@ export default function Home() {
                       <button
                         onClick={() => toggleComplete(todo)}
                         className={`ml-4 cursor-pointer px-4 py-2 rounded-lg transition-all duration-200 ${todo.completed
-                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                          ? 'bg-green-500 hover:bg-green-600 text-white'
+                          : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                           }`}
                       >
                         {todo.completed ? '✅ Done' : '⬜️ Mark Done'}
