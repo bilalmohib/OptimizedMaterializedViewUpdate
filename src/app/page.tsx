@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { Dialog, Transition } from '@headlessui/react'
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XMarkIcon, BookOpenIcon } from '@heroicons/react/24/outline'
 import toast, { Toaster } from 'react-hot-toast'
+import Link from 'next/link'
 
 // Configure toast defaults globally
 toast.remove(); // Clear any existing toasts
@@ -165,13 +166,22 @@ export default function Home() {
               <h1 className="text-3xl font-bold text-gray-900">TaskMaster</h1>
               <p className="mt-1 text-sm text-gray-500">Manage your tasks efficiently</p>
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex cursor-pointer items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              New Task
-            </button>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/docs"
+                className="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <BookOpenIcon className="h-5 w-5 mr-2" />
+                Documentation
+              </Link>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex cursor-pointer items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                New Task
+              </button>
+            </div>
           </div>
         </div>
       </header>

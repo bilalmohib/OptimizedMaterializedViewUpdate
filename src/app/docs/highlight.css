@@ -1,0 +1,116 @@
+/* Based on the Tomorrow Night Eighties theme */
+
+/* Code syntax highlighting styles */
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #f8f8f2;
+  background: #2d2d2d;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #969896;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-type,
+.hljs-addition {
+  color: #cc99cc;
+}
+
+.hljs-number,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #f99157;
+}
+
+.hljs-string,
+.hljs-doctag,
+.hljs-regexp {
+  color: #8abeb7;
+}
+
+.hljs-title,
+.hljs-name,
+.hljs-section,
+.hljs-built_in {
+  color: #b5bd68;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-selector-id,
+.hljs-class .hljs-title {
+  color: #ffcc66;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-subst,
+.hljs-meta,
+.hljs-meta-keyword,
+.hljs-meta-string {
+  color: #f99157;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-deletion {
+  color: #dc322f;
+}
+
+/* SQL specific styling */
+.language-sql .hljs-keyword {
+  color: #66cccc;
+  font-weight: bold;
+}
+
+.language-sql .hljs-built_in {
+  color: #cc99cc;
+}
+
+.language-sql .hljs-number {
+  color: #f99157;
+}
+
+.language-sql .hljs-string {
+  color: #99cc99;
+}
+
+.language-sql .hljs-literal {
+  color: #f2777a;
+}
+
+/* PgSQL specific styling */
+.language-pgsql .hljs-keyword {
+  color: #66cccc;
+  font-weight: bold;
+}
+
+/* Scrollbar styling */
+pre::-webkit-scrollbar {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+pre::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+} 
