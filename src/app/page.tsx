@@ -21,7 +21,8 @@ export default function Home() {
       const { data, error } = await supabase
         .from('combined_todos')
         .select('*')
-        .limit(200000)
+        .range(0, 99999) // fetch 100,000 records
+
       if (error) {
         console.error('Fetch error:', error)
       } else {
@@ -75,11 +76,11 @@ export default function Home() {
             <p>Remaining: <span className="font-semibold">{totalCount - completedCount}</span></p>
           </div>
         </div>
-        
+
         <ul className="space-y-3">
           {todos.map((todo) => (
-            <li 
-              key={todo.id} 
+            <li
+              key={todo.id}
               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <span className={`flex-1 ${todo.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
@@ -87,11 +88,10 @@ export default function Home() {
               </span>
               <button
                 onClick={() => toggleComplete(todo)}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  todo.completed 
-                    ? 'bg-green-500 hover:bg-green-600 text-white' 
+                className={`px-4 py-2 rounded-md transition-colors ${todo.completed
+                    ? 'bg-green-500 hover:bg-green-600 text-white'
                     : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                }`}
+                  }`}
               >
                 {todo.completed ? '✅ Done' : '⬜️ Mark Done'}
               </button>
